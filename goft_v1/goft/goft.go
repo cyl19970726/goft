@@ -6,7 +6,7 @@ import (
 
 type Goft struct {
 	*gin.Engine
-	g *gin.RouterGroup
+	currentRouterGroup *gin.RouterGroup
 }
 
 func NewGoft() *Goft {
@@ -28,8 +28,28 @@ func (this *Goft) Use(middleware ...gin.HandlerFunc) *Goft {
 /*
  *  type HandlerFunc func(*Context)
  */
-func (this *Goft) HandleService(httpMethod, relativePath string, handler ...gin.HandlerFunc) *Goft {
-	this.Engine.Handle(httpMethod, relativePath, handler...)
+func (this *Goft) HandleServices(httpMethod, relativePath string, handler ...gin.HandlerFunc) *Goft {
+	if this.currentRouterGroup != nil {
+		this.currentRouterGroup.Handle(httpMethod, relativePath, handler...)
+	} else {
+		this.Engine.Handle(httpMethod, relativePath, handler...)
+	}
+
+	return this
+}
+
+/*
+添加路由组功能
+func (group *RouterGroup) Group(relativePath string, handlers ...HandlerFunc) *RouterGroup {
+	return &RouterGroup{
+		Handlers: group.combineHandlers(handlers),
+		basePath: group.calculateAbsolutePath(relativePath),
+		engine:   group.engine,
+	}
+}
+*/
+func (this *Goft) GroupServices(relativePath string, handlers ...gin.HandlerFunc) *Goft {
+	this.currentRouterGroup = this.Group(relativePath, handlers...)
 	return this
 }
 
